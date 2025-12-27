@@ -58,10 +58,14 @@ while current_date < date_to:
             else:
                 shift_end = datetime.datetime.combine(current_date, times[1])
         
+            name = shift_code_to_name(shift_code)
+
             event = icalendar.Event()
-            event.add('summary', f'Shift {i + 1} - {shift_code_to_name(shift_code)}')
+            event.add('summary', f'Shift {i + 1} - {name}')
             event.add('dtstart', shift_start)
             event.add('dtend', shift_end)
+            event.add('X-SHIFT', str(i + 1))
+            event.add('X-SHIFT-NAME', name)
             cal.add_component(event)
 
     if offset == 140:
