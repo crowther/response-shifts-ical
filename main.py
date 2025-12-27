@@ -10,6 +10,7 @@ import argparse
 import icalendar
 from typing import Optional
 
+TEMPLATE_CYCLE_LENGTH = 140
 START_DATE = datetime.date(2018, 1, 1)
 START_OFFSET = 71
 
@@ -31,61 +32,65 @@ def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, en
     if end_time <= start_time:
         return datetime.datetime.combine(start_date + datetime.timedelta(days=1), end_time)
     else:
-        return datetime.datetime.combine(start_date, end_time)  
-
-with open('template.csv') as f:
-    reader = csv.DictReader(f)
-    shift_templates: list[dict[str, str]] = list(reader)
-
-shift_templates_filtered: list[dict[int, str]] = []
-for i, s in enumerate(shift_templates):
-    shift_templates_filtered.append({int(k): v for k, v in s.items() if v != 'R' and v != 'SP'})
-
-shift_templates = shift_templates_filtered
+        return datetime.datetime.combine(start_date, end_time)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="Shift iCal Generator",
         description='generate an iCal calendar based on template.csv')
 
+    parser.add_argument('-of', '--output-file', type=str, default='response.ics', dest='output_file')
+    parser.add_argument('-tf', '--template-file', type=str, default='template.csv', dest='template_file')
     parser.add_argument('-f', '--from', type=datetime.date.fromisoformat, default=datetime.date.today(), dest='date_from')
     parser.add_argument('-t', '--to', type=datetime.date.fromisoformat, default=(datetime.date.today() + datetime.timedelta(weeks=52)), dest='date_to')
 
     return parser.parse_args()
 
-args: argparse.Namespace = parse_args()
+def main() -> None:
+    args: argparse.Namespace = parse_args()
 
-date_from: datetime.date
-date_to: datetime.date
-date_from, date_to = args.date_from, args.date_to
-current_date: datetime.date = START_DATE
-offset: int = START_OFFSET
+    template_file: str = args.template_file
+    output_file: str = args.output_file
+    date_from: datetime.date
+    date_to: datetime.date
+    date_from, date_to = args.date_from, args.date_to
+    current_date: datetime.date = START_DATE
+    offset: int = START_OFFSET
 
-cal: icalendar.Calendar = icalendar.Calendar()
+    cal: icalendar.Calendar = icalendar.Calendar()
 
-while current_date < date_to:
+    with open(template_file) as f:
+        reader = csv.DictReader(f)
+        shift_templates: list[dict[str, str]] = list(reader)
+
+    shift_templates_filtered: list[dict[int, str]] = []
     for i, s in enumerate(shift_templates):
-        shift_code: Optional[str] = s.get(offset)  # None when R/SP filtered out
-        if shift_code and (date_from <= current_date <= date_to):
-            times: tuple[datetime.time, datetime.time] = shift_code_to_times(shift_code)
-            shift_start: datetime.datetime = datetime.datetime.combine(current_date, times[0])
-            shift_end: datetime.datetime = calculate_shift_end(current_date, times[0], times[1])
-            name: str = shift_code_to_name(shift_code)
+        shift_templates_filtered.append({int(k): v for k, v in s.items() if v != 'R' and v != 'SP'})
 
-            event: icalendar.Event = icalendar.Event()
-            event.add('summary', f'Shift {i + 1} - {name}')
-            event.add('dtstart', shift_start)
-            event.add('dtend', shift_end)
-            event.add('X-SHIFT', str(i + 1))
-            event.add('X-SHIFT-NAME', name)
-            cal.add_component(event)
+    shift_templates = shift_templates_filtered
 
-    if offset == 140:
-        offset = 1
-    else:
-        offset += 1
+    while current_date < date_to:
+        for i, s in enumerate(shift_templates):
+            shift_code: Optional[str] = s.get(offset)  # None when R/SP filtered out
+            if shift_code and (date_from <= current_date <= date_to):
+                times: tuple[datetime.time, datetime.time] = shift_code_to_times(shift_code)
+                shift_start: datetime.datetime = datetime.datetime.combine(current_date, times[0])
+                shift_end: datetime.datetime = calculate_shift_end(current_date, times[0], times[1])
+                name: str = shift_code_to_name(shift_code)
 
-    current_date += datetime.timedelta(days=1)
+                event: icalendar.Event = icalendar.Event()
+                event.add('summary', f'Shift {i + 1} - {name}')
+                event.add('dtstart', shift_start)
+                event.add('dtend', shift_end)
+                event.add('X-SHIFT', str(i + 1))
+                event.add('X-SHIFT-NAME', name)
+                cal.add_component(event)
 
-with open(('response.ics'), 'wb') as f:
-    f.write(cal.to_ical())
+        offset = (offset % TEMPLATE_CYCLE_LENGTH) + 1
+        current_date += datetime.timedelta(days=1)
+
+    with open(output_file, 'wb') as f:
+        f.write(cal.to_ical())
+
+if __name__ == '__main__':
+    main()
