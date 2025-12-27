@@ -14,6 +14,7 @@ from typing import Optional
 TEMPLATE_CYCLE_LENGTH = 140
 START_DATE = datetime.date(2018, 1, 1)
 START_OFFSET = 1
+EXCLUDED_SHIFT_CODES = {'R', 'SP'}
 
 def shift_code_to_name(shift_code: str) -> str:
     match shift_code:
@@ -68,15 +69,14 @@ def generate_calendar(
 
     cal: icalendar.Calendar = icalendar.Calendar()
 
+    shift_templates: list[dict[int, str]]
+
     with open(template_file) as f:
         reader = csv.DictReader(f)
-        shift_templates: list[dict[str, str]] = list(reader)
-
-    shift_templates_filtered: list[dict[int, str]] = []
-    for i, s in enumerate(shift_templates):
-        shift_templates_filtered.append({int(k): v for k, v in s.items() if v != 'R' and v != 'SP'})
-
-    shift_templates = shift_templates_filtered
+        shift_templates: list[dict[int, str]] = [
+            {int(k): v for k, v in s.items() if v not in EXCLUDED_SHIFT_CODES}
+            for s in list(reader)
+        ]
 
     while current_date < date_to:
         for i, s in enumerate(shift_templates):
