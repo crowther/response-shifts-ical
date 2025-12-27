@@ -93,6 +93,7 @@ def generate_calendar(
                 shift_type: str = shift_code_to_name(shift_code)
 
                 event: icalendar.Event = icalendar.Event()
+                event.add('UID', f'shift-{shift_number}-{current_date.isoformat()}@shift-calendar-generator')
                 event.add('SUMMARY', f'Shift {shift_number} - {shift_type}')
                 event.add('DTSTART', shift_start)
                 event.add('DTEND', shift_end)
