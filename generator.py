@@ -13,7 +13,6 @@ from typing import Optional
 
 TEMPLATE_CYCLE_LENGTH = 140
 START_DATE = datetime.date(2018, 1, 1)
-START_OFFSET = 1
 EXCLUDED_SHIFT_CODES = {'R', 'SP'}
 
 def shift_code_to_name(shift_code: str) -> str:
@@ -64,12 +63,11 @@ def generate_calendar(
     if date_from > date_to:
         raise ValueError(f'Start date ({date_from}) must be before the end date ({date_to})')
 
-    current_date: datetime.date = START_DATE
-    offset: int = START_OFFSET
+    days_diff: int = (date_from - START_DATE).days
+    current_date: datetime.date = date_from
+    offset: int = (days_diff % TEMPLATE_CYCLE_LENGTH) + 1
 
     cal: icalendar.Calendar = icalendar.Calendar()
-
-    shift_templates: list[dict[int, str]]
 
     with open(template_file) as f:
         reader = csv.DictReader(f)
@@ -79,14 +77,12 @@ def generate_calendar(
         ]
 
     while current_date < date_to:
-        for i, s in enumerate(shift_templates):
-            shift_number: int = i + 1
-
+        for shift_number, s in enumerate(shift_templates, start=1):
             if selected_shifts is not None and shift_number not in selected_shifts:
                 continue
 
             shift_code: Optional[str] = s.get(offset)  # None when R/SP filtered out
-            if shift_code and (date_from <= current_date <= date_to):
+            if shift_code:
                 times: tuple[datetime.time, datetime.time] = shift_code_to_times(shift_code)
                 shift_start: datetime.datetime = datetime.datetime.combine(current_date, times[0])
                 shift_end: datetime.datetime = calculate_shift_end(current_date, times[0], times[1])
