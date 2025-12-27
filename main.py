@@ -20,6 +20,7 @@ def shift_code_to_name(shift_code: str) -> str:
         case 'L': return 'Late'
         case 'N': return 'Night'
         case 'SN': return 'Super Noon'
+        case _: raise ValueError(f'Unknown shift code: {shift_code}')
 
 def shift_code_to_times(shift_code: str) -> tuple[datetime.time, datetime.time]:
     match shift_code:
@@ -27,6 +28,7 @@ def shift_code_to_times(shift_code: str) -> tuple[datetime.time, datetime.time]:
         case 'L': return (datetime.time(hour=15, minute=0), datetime.time(hour=0, minute=0))
         case 'N': return (datetime.time(hour=22, minute=0), datetime.time(hour=7, minute=0))
         case 'SN': return (datetime.time(hour=16, minute=0), datetime.time(hour=3, minute=0))
+        case _: raise ValueError(f'Unknown shift code: {shift_code}')
 
 def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, end_time: datetime.time) -> datetime.datetime:
     if end_time <= start_time:
