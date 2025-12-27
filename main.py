@@ -99,14 +99,14 @@ def main() -> None:
                 times: tuple[datetime.time, datetime.time] = shift_code_to_times(shift_code)
                 shift_start: datetime.datetime = datetime.datetime.combine(current_date, times[0])
                 shift_end: datetime.datetime = calculate_shift_end(current_date, times[0], times[1])
-                name: str = shift_code_to_name(shift_code)
+                shift_type: str = shift_code_to_name(shift_code)
 
                 event: icalendar.Event = icalendar.Event()
-                event.add('summary', f'Shift {shift_number} - {name}')
+                event.add('summary', f'Shift {shift_number} - {shift_type}')
                 event.add('dtstart', shift_start)
                 event.add('dtend', shift_end)
-                event.add('X-SHIFT', str(shift_number))
-                event.add('X-SHIFT-NAME', name)
+                event.add('X-SHIFT-NUMBER', str(shift_number))
+                event.add('X-SHIFT-TYPE', shift_type)
                 cal.add_component(event)
 
         offset = (offset % TEMPLATE_CYCLE_LENGTH) + 1
