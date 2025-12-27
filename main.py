@@ -94,5 +94,7 @@ def main() -> None:
     with open(output_file, 'wb') as f:
         f.write(cal.to_ical())
 
+    print(f'Calendar written to {output_file}')
+
 if __name__ == '__main__':
     main()
