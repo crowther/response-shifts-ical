@@ -27,6 +27,12 @@ def shift_code_to_times(shift_code: str) -> tuple[datetime.time, datetime.time]:
         case 'N': return (datetime.time(hour=22, minute=0), datetime.time(hour=7, minute=0))
         case 'SN': return (datetime.time(hour=16, minute=0), datetime.time(hour=3, minute=0))
 
+def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, end_time: datetime.time) -> datetime.datetime:
+    if end_time <= start_time:
+        return datetime.datetime.combine(start_date + datetime.timedelta(days=1), end_time)
+    else:
+        return datetime.datetime.combine(start_date, end_time)  
+
 with open('template.csv') as f:
     reader = csv.DictReader(f)
     shift_templates: list[dict[str, str]] = list(reader)
@@ -63,13 +69,7 @@ while current_date < date_to:
         if shift_code and (date_from <= current_date <= date_to):
             times: tuple[datetime.time, datetime.time] = shift_code_to_times(shift_code)
             shift_start: datetime.datetime = datetime.datetime.combine(current_date, times[0])
-
-            shift_end: datetime.datetime
-            if shift_code == 'L' or shift_code == 'N' or shift_code == 'SN':
-                shift_end = datetime.datetime.combine(current_date + datetime.timedelta(days=1), times[1])
-            else:
-                shift_end = datetime.datetime.combine(current_date, times[1])
-
+            shift_end: datetime.datetime = calculate_shift_end(current_date, times[0], times[1])
             name: str = shift_code_to_name(shift_code)
 
             event: icalendar.Event = icalendar.Event()
