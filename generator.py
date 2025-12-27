@@ -13,7 +13,7 @@ from typing import Optional
 
 TEMPLATE_CYCLE_LENGTH = 140
 START_DATE = datetime.date(2018, 1, 1)
-START_OFFSET = 71
+START_OFFSET = 1
 
 def shift_code_to_name(shift_code: str) -> str:
     match shift_code:
