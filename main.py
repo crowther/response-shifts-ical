@@ -7,6 +7,7 @@
 import csv
 import datetime
 import argparse
+import sys
 import icalendar
 from typing import Optional
 
@@ -56,6 +57,11 @@ def main() -> None:
     date_from: datetime.date
     date_to: datetime.date
     date_from, date_to = args.date_from, args.date_to
+
+    if date_from > date_to:
+        print(f'Start date ({date_from}) must be before the end date ({date_to})', file=sys.stderr)
+        sys.exit(1)
+
     current_date: datetime.date = START_DATE
     offset: int = START_OFFSET
 
