@@ -93,9 +93,9 @@ def generate_calendar(
                 shift_type: str = shift_code_to_name(shift_code)
 
                 event: icalendar.Event = icalendar.Event()
-                event.add('summary', f'Shift {shift_number} - {shift_type}')
-                event.add('dtstart', shift_start)
-                event.add('dtend', shift_end)
+                event.add('SUMMARY', f'Shift {shift_number} - {shift_type}')
+                event.add('DTSTART', shift_start)
+                event.add('DTEND', shift_end)
                 event.add('X-SHIFT-NUMBER', str(shift_number))
                 event.add('X-SHIFT-TYPE', shift_type)
                 cal.add_component(event)
