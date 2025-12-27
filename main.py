@@ -8,7 +8,6 @@ import csv
 import datetime
 import argparse
 import icalendar
-import os
 from typing import Optional
 
 START_DATE = datetime.date(2018, 1, 1)
