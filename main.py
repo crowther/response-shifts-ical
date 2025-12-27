@@ -1,3 +1,9 @@
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "icalendar>=6.3.2",
+# ]
+# ///
 import csv
 import datetime
 import argparse
