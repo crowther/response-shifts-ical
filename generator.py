@@ -110,7 +110,7 @@ def parse_args() -> argparse.Namespace:
         prog="Shift iCal Generator",
         description='generate an iCal calendar based on a template file')
 
-    parser.add_argument('-of', '--output-file', type=str, default='response.ics', dest='output_file')
+    parser.add_argument('-of', '--output-file', type=str, default='shifts.ics', dest='output_file')
     parser.add_argument('-tf', '--template-file', type=str, default='template.csv', dest='template_file')
     parser.add_argument('-s', '--shifts', type=str, help='Comma-separated shift numbers to include (e.g., "1,3,5"). If not specified, all shifts are included.', dest='shifts')
     parser.add_argument('-f', '--from', type=datetime.date.fromisoformat, default=datetime.date.today(), dest='date_from')
