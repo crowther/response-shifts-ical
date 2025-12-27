@@ -1,1 +1,1 @@
-# response-shifts-ical
+# shift-calendar-generator
