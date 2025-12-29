@@ -133,6 +133,12 @@ def main() -> None:
             print(f'Invalid shift numbers: {args.shifts}. Must be comma-separated integers.', file=sys.stderr)
             sys.exit(1)
 
+        # Validate shift numbers are in valid range (1-5)
+        invalid_shifts = {s for s in selected_shifts if s < 1 or s > 5}
+        if invalid_shifts:
+            print(f'Error: Invalid shift numbers: {sorted(invalid_shifts)}. Valid shifts are 1-5.', file=sys.stderr)
+            sys.exit(1)
+
     try:
         cal = generate_calendar(template_file, date_from, date_to, selected_shifts)
 
