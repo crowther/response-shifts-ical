@@ -37,6 +37,28 @@ def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, en
     else:
         return datetime.datetime.combine(start_date, end_time)
 
+def load_shift_templates(template_file: str) -> list[dict[int, str]]:
+    """
+    Load and parse shift templates from a CSV file.
+
+    Args:
+        template_file: Path to the CSV template file
+
+    Returns:
+        List of dictionaries mapping day numbers to shift codes.
+        Each dictionary represents one shift/team, with excluded codes (R, SP) filtered out.
+
+    Raises:
+        FileNotFoundError: If template_file doesn't exist
+    """
+    with open(template_file) as f:
+        reader = csv.DictReader(f)
+        shift_templates: list[dict[int, str]] = [
+            {int(k): v for k, v in s.items() if v not in EXCLUDED_SHIFT_CODES}
+            for s in list(reader)
+        ]
+    return shift_templates
+
 def generate_calendar(
     template_file: str,
     date_from: datetime.date,
@@ -68,13 +90,7 @@ def generate_calendar(
     offset: int = (days_diff % TEMPLATE_CYCLE_LENGTH) + 1
 
     cal: icalendar.Calendar = icalendar.Calendar()
-
-    with open(template_file) as f:
-        reader = csv.DictReader(f)
-        shift_templates: list[dict[int, str]] = [
-            {int(k): v for k, v in s.items() if v not in EXCLUDED_SHIFT_CODES}
-            for s in list(reader)
-        ]
+    shift_templates: list[dict[int, str]] = load_shift_templates(template_file)
 
     while current_date < date_to:
         for shift_number, s in enumerate(shift_templates, start=1):
