@@ -126,7 +126,7 @@ def generate_calendar(
 
     cal: icalendar.Calendar = icalendar.Calendar()
 
-    while current_date < date_to:
+    while current_date <= date_to:
         for shift_number, s in enumerate(shift_templates, start=1):
             if selected_shifts is not None and shift_number not in selected_shifts:
                 continue
