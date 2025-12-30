@@ -37,7 +37,7 @@ def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, en
     else:
         return datetime.datetime.combine(start_date, end_time)
 
-def load_shift_templates(template_file: str) -> list[dict[int, str]]:
+def load_shift_templates_from_file(template_file: str) -> list[dict[int, str]]:
     """
     Load and parse shift templates from a CSV file.
 
@@ -59,14 +59,18 @@ def load_shift_templates(template_file: str) -> list[dict[int, str]]:
         ]
     return shift_templates
 
-def generate_calendar(
+def generate_calendar_from_file(
     template_file: str,
     date_from: datetime.date,
     date_to: datetime.date,
     selected_shifts: Optional[set[int]] = None
 ) -> icalendar.Calendar:
     """
-    Generate an iCalendar object from a shift template.
+    Generate an iCalendar object from a shift template CSV file.
+
+    Convenience wrapper that loads the template file and generates the calendar.
+    For web applications or repeated calls, consider using load_shift_templates_from_file()
+    once and calling generate_calendar() directly to avoid repeated file I/O.
 
     Args:
         template_file: Path to the CSV template file
@@ -82,6 +86,35 @@ def generate_calendar(
         ValueError: If date_from > date_to
         FileNotFoundError: If template_file doesn't exist
     """
+    shift_templates = load_shift_templates_from_file(template_file)
+    return generate_calendar(shift_templates, date_from, date_to, selected_shifts)
+
+def generate_calendar(
+    shift_templates: list[dict[int, str]],
+    date_from: datetime.date,
+    date_to: datetime.date,
+    selected_shifts: Optional[set[int]] = None
+) -> icalendar.Calendar:
+    """
+    Generate an iCalendar object from pre-loaded shift templates.
+
+    This is the core calendar generation function that accepts pre-loaded template data.
+    For one-off generation from a file, use generate_calendar_from_file() instead.
+
+    Args:
+        shift_templates: Pre-loaded shift templates (from load_shift_templates_from_file())
+                        List of dictionaries mapping day numbers to shift codes
+        date_from: Start date for calendar generation
+        date_to: End date for calendar generation
+        selected_shifts: Optional set of shift numbers to include (e.g., {1, 3, 5})
+                        If None, all shifts are included
+
+    Returns:
+        icalendar.Calendar object containing shift events
+
+    Raises:
+        ValueError: If date_from > date_to
+    """
     if date_from > date_to:
         raise ValueError(f'Start date ({date_from}) must be before the end date ({date_to})')
 
@@ -90,7 +123,6 @@ def generate_calendar(
     offset: int = (days_diff % TEMPLATE_CYCLE_LENGTH) + 1
 
     cal: icalendar.Calendar = icalendar.Calendar()
-    shift_templates: list[dict[int, str]] = load_shift_templates(template_file)
 
     while current_date < date_to:
         for shift_number, s in enumerate(shift_templates, start=1):
@@ -156,7 +188,7 @@ def main() -> None:
             sys.exit(1)
 
     try:
-        cal = generate_calendar(template_file, date_from, date_to, selected_shifts)
+        cal = generate_calendar_from_file(template_file, date_from, date_to, selected_shifts)
 
         with open(output_file, 'wb') as f:
             f.write(cal.to_ical())
