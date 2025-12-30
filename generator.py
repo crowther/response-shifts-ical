@@ -11,6 +11,8 @@ import sys
 import icalendar
 from typing import Optional
 
+ShiftTemplates = list[dict[int, str]]
+
 TEMPLATE_CYCLE_LENGTH = 140
 START_DATE = datetime.date(2018, 1, 1)
 EXCLUDED_SHIFT_CODES = {'R', 'SP'}
@@ -37,7 +39,7 @@ def calculate_shift_end(start_date: datetime.date, start_time: datetime.time, en
     else:
         return datetime.datetime.combine(start_date, end_time)
 
-def load_shift_templates_from_file(template_file: str) -> list[dict[int, str]]:
+def load_shift_templates_from_file(template_file: str) -> ShiftTemplates:
     """
     Load and parse shift templates from a CSV file.
 
@@ -53,7 +55,7 @@ def load_shift_templates_from_file(template_file: str) -> list[dict[int, str]]:
     """
     with open(template_file) as f:
         reader = csv.DictReader(f)
-        shift_templates: list[dict[int, str]] = [
+        shift_templates: ShiftTemplates = [
             {int(k): v for k, v in s.items() if v not in EXCLUDED_SHIFT_CODES}
             for s in list(reader)
         ]
@@ -90,7 +92,7 @@ def generate_calendar_from_file(
     return generate_calendar(shift_templates, date_from, date_to, selected_shifts)
 
 def generate_calendar(
-    shift_templates: list[dict[int, str]],
+    shift_templates: ShiftTemplates,
     date_from: datetime.date,
     date_to: datetime.date,
     selected_shifts: Optional[set[int]] = None
