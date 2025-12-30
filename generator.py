@@ -125,6 +125,7 @@ def generate_calendar(
     offset: int = (days_diff % TEMPLATE_CYCLE_LENGTH) + 1
 
     cal: icalendar.Calendar = icalendar.Calendar()
+    timestamp: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
 
     while current_date <= date_to:
         for shift_number, s in enumerate(shift_templates, start=1):
@@ -140,7 +141,7 @@ def generate_calendar(
 
                 event: icalendar.Event = icalendar.Event()
                 event.add('UID', f'shift-{shift_number}-{current_date.isoformat()}@shift-calendar-generator')
-                event.add('DTSTAMP', datetime.datetime.now(datetime.timezone.utc))
+                event.add('DTSTAMP', timestamp)
                 event.add('SUMMARY', f'Shift {shift_number} - {shift_type}')
                 event.add('DTSTART', shift_start)
                 event.add('DTEND', shift_end)
