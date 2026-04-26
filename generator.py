@@ -147,6 +147,7 @@ def generate_calendar(
                 event.add('DTEND', shift_end)
                 event.add('X-SHIFT-NUMBER', str(shift_number))
                 event.add('X-SHIFT-TYPE', shift_type)
+                event.add('X-SHIFT-CODE', shift_code)
                 cal.add_component(event)
 
         offset = (offset % TEMPLATE_CYCLE_LENGTH) + 1
